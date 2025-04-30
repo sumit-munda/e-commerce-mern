@@ -1,4 +1,3 @@
-import React from "react";
 import { FaTrash } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { server } from "../redux/store";

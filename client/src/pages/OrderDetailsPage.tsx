@@ -1,12 +1,11 @@
-import React from "react";
 import { useSelector } from "react-redux";
-import { userReducerInitialState } from "../types/reducer.types";
-import { Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
-import { useOrderDetailsQuery } from "../redux/api/orderAPI";
-import { Order, OrderItem } from "../types/types";
+import { Navigate, NavLink, useParams } from "react-router-dom";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import { SkeletonLoader } from "../components/Loader";
+import { useOrderDetailsQuery } from "../redux/api/orderAPI";
 import { server } from "../redux/store";
+import { userReducerInitialState } from "../types/reducer.types";
+import { Order, OrderItem } from "../types/types";
 
 const defaultData: Order = {
   shippingInfo: {
