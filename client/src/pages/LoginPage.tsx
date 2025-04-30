@@ -3,8 +3,10 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
+import { useDispatch } from "react-redux";
 import { auth } from "../firebase";
-import { useLoginMutation } from "../redux/api/userAPI";
+import { getUser, useLoginMutation } from "../redux/api/userAPI";
+import { userExist, userNotExist } from "../redux/reducer/userReducer";
 import { MessageResponse } from "../types/api.types";
 
 const LoginPage = () => {
@@ -12,6 +14,7 @@ const LoginPage = () => {
   const [date, setDate] = useState("");
 
   const [login] = useLoginMutation();
+  const dispatch = useDispatch();
 
   const loginHandler = async () => {
     try {
@@ -35,7 +38,8 @@ const LoginPage = () => {
         if (token) {
           localStorage.setItem("token", token);
         }
-
+        const data = await getUser(user.uid);
+        dispatch(userExist(data.user));
         toast.success(message);
       } else {
         const error = res.error as FetchBaseQueryError;
@@ -44,6 +48,7 @@ const LoginPage = () => {
       }
       console.log(user);
     } catch (error) {
+      dispatch(userNotExist());
       toast.error("Sign In Fail");
     }
   };
