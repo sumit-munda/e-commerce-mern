@@ -24,7 +24,7 @@ export const getLatestProducts = TryCatch(async (req, res, next) => {
   }
 
   res.status(200).json({
-    successs: true,
+    success: true,
     latestProducts,
   });
 });
@@ -39,7 +39,7 @@ export const getAllCategories = TryCatch(async (req, res, next) => {
   }
 
   res.status(200).json({
-    successs: true,
+    success: true,
     categories,
   });
 });
@@ -54,7 +54,7 @@ export const getAdminProducts = TryCatch(async (req, res, next) => {
   }
 
   res.status(200).json({
-    successs: true,
+    success: true,
     adminProducts,
   });
 });
@@ -72,7 +72,7 @@ export const getSingleProduct = TryCatch(async (req, res, next) => {
   }
 
   res.status(200).json({
-    successs: true,
+    success: true,
     product,
   });
 });
@@ -114,7 +114,7 @@ export const getAllProducts = TryCatch(
     const totalPages = Math.ceil(filteredOnlyProducts.length / limit);
 
     res.status(200).json({
-      successs: true,
+      success: true,
       allProducts,
       totalPages,
     });
@@ -139,7 +139,7 @@ export const postProduct = TryCatch(
       photo: photo.path,
     });
 
-   invalidateCache({product: true, admin: true})
+    invalidateCache({ product: true, admin: true });
 
     res.status(201).json({
       success: true,
@@ -177,7 +177,11 @@ export const updateProduct = TryCatch(async (req, res, next) => {
   }
 
   await product.save();
- invalidateCache({product: true, productId: String(product._id) , admin: true})
+  invalidateCache({
+    product: true,
+    productId: String(product._id),
+    admin: true,
+  });
 
   res.status(200).json({
     success: true,
@@ -196,16 +200,17 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   });
 
   await product.deleteOne();
-   invalidateCache({product: true, productId: String(product._id), admin: true})
-
+  invalidateCache({
+    product: true,
+    productId: String(product._id),
+    admin: true,
+  });
 
   res.status(200).json({
-    successs: true,
+    success: true,
     message: "Product deleted successfully",
   });
 });
-
-
 
 export const getAllReviewsOfProdcuts = TryCatch(async (req, res, next) => {});
 

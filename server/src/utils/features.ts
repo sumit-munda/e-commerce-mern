@@ -15,6 +15,7 @@ export const invalidateCache = ({
       "latest-products",
       "categories",
       "all-products",
+      "admin-products"
     ];
 
     if (typeof productId === "string") productKeys.push(`product-${productId}`);
@@ -25,6 +26,7 @@ export const invalidateCache = ({
       });
     nodeCache.del(productKeys);
   }
+
   if (order) {
     const orderKeys: string[] = [
       "all-orders",
@@ -34,6 +36,7 @@ export const invalidateCache = ({
 
     nodeCache.del(orderKeys);
   }
+
   if (admin) {
     nodeCache.del(["admin-stats", "admin-pie-charts", "admin-bar-charts", "admin-line-charts"])
   }
@@ -130,3 +133,5 @@ export const getChartData = ({
 
   return data;
 };
+
+

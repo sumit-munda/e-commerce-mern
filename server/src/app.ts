@@ -10,6 +10,7 @@ import connectToDB from "./config/db.js";
 import NodeCache from "node-cache";
 import morgan from "morgan";
 import Stripe from "stripe";
+import cors from 'cors'
 
 export const stripe = new Stripe(process.env.STRIPE_KEY as string)
 
@@ -21,6 +22,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"))
+app.use(cors())
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/products", productRoutes);

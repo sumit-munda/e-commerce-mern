@@ -58,6 +58,7 @@ const orderSchema = new mongoose.Schema(
       {
         name: String,
         photo: String,
+        price: Number,
         quantity: Number,
         productId: {
           type: mongoose.Types.ObjectId,

@@ -238,7 +238,7 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
       delivered: deliveredOrder,
     };
 
-    const productCategories: Record<string, number>[] = await getInventories({
+    const productCategories = await getInventories({
       categories,
       productsCount,
     });
