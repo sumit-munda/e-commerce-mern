@@ -1,11 +1,12 @@
-import React from 'react'
+import { MdError } from "react-icons/md";
 
 const NotFound = () => {
   return (
-    <div>
-      Not Found Page
+    <div className="container not-found">
+      <MdError />
+      <h1>Page Not Found!</h1>
     </div>
-  )
-}
+  );
+};
 
-export default NotFound
+export default NotFound;

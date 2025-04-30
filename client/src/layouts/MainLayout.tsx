@@ -1,10 +1,13 @@
 import React from "react";
 import Header from "../components/Header";
 import { Outlet } from "react-router-dom";
+import { User } from "../types/types";
 
-const user = { _id: 5, name: "VINOD", role: "admin" };
+interface MainLayoutProps {
+  user: User | null;
+}
 
-const MainLayout = () => {
+const MainLayout = ({ user }: MainLayoutProps) => {
   return (
     <>
       <Header user={user} />

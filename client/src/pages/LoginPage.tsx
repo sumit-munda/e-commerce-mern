@@ -1,9 +1,52 @@
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
+import { auth } from "../firebase";
+import { useLoginMutation } from "../redux/api/userAPI";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { MessageResponse } from "../types/api.types";
 
 const LoginPage = () => {
   const [gender, setGender] = useState("");
   const [date, setDate] = useState("");
+
+  const [login] = useLoginMutation();
+
+  const loginHandler = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const { user } = await signInWithPopup(auth, provider);
+      const res = await login({
+        _id: user.uid,
+        name: user.displayName!,
+        email: user.email!,
+        photo: user.photoURL!,
+        role: "user",
+        gender,
+        dob: date,
+      });
+
+      if ("data" in res) {
+        const message = (res.data as MessageResponse).message;
+
+        const token = (res.data as any).token;
+
+        if (token) {
+          localStorage.setItem("token", token);
+        }
+
+        toast.success(message);
+      } else {
+        const error = res.error as FetchBaseQueryError;
+        const message = (error.data as MessageResponse).message;
+        toast.error(message);
+      }
+      console.log(user);
+    } catch (error) {
+      toast.error("Sign In Fail");
+    }
+  };
 
   return (
     <div className="login">
@@ -27,7 +70,7 @@ const LoginPage = () => {
         </div>
         <div>
           <p>Already Signed In Once</p>
-          <button>
+          <button onClick={loginHandler}>
             <FcGoogle />
             <span>Sign in with Google</span>
           </button>

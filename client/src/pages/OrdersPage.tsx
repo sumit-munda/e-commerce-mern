@@ -1,7 +1,14 @@
-import React, { ReactElement, useState } from "react";
-import TableHOC from "../components/admin/TableHOC";
-import { Column } from "react-table";
+import { ReactElement, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
+import { Column } from "react-table";
+import TableHOC from "../components/admin/TableHOC";
+import { SkeletonLoader } from "../components/Loader";
+import { useMyOrdersQuery } from "../redux/api/orderAPI";
+import { CustomError } from "../types/api.types";
+import { userReducerInitialState } from "../types/reducer.types";
+import { RootState } from "../redux/store";
 
 type DataType = {
   _id: string;
@@ -36,18 +43,42 @@ const column: Column<DataType>[] = [
 ];
 
 const OrdersPage = () => {
-  const [rows] = useState<DataType[]>([
-    {
-      _id: "qwerty",
-      amount: 45454,
-      quantity: 23,
-      discount: 5666,
-      status: <span className="red">
-        Processing...
-      </span>,
-      action: <NavLink to={`/order/qwerty`}>View</NavLink>,
-    },
-  ]);
+  const { user } = useSelector((state: RootState) => state.userReducer);
+
+  const { isLoading, data, isError, error } = useMyOrdersQuery(user?._id!);
+
+  const [rows, setRows] = useState<DataType[]>([]);
+
+  if (isError) {
+    const err = error as CustomError;
+    toast.error(err.data.message);
+  }
+
+  useEffect(() => {
+    if (data)
+      setRows(
+        data.userOrders.map((i) => ({
+          _id: i._id,
+          amount: i.total,
+          discount: i.discount,
+          quantity: i.orderItems.length,
+          status: (
+            <span
+              className={
+                i.status === "Processing"
+                  ? "red"
+                  : i.status === "Shipped"
+                  ? "green"
+                  : "purple"
+              }
+            >
+              {i.status}
+            </span>
+          ),
+          action: <NavLink to={`/order/${i._id}`}>View</NavLink>,
+        }))
+      );
+  }, [data]);
 
   const Table = TableHOC<DataType>(
     column,
@@ -59,7 +90,7 @@ const OrdersPage = () => {
   return (
     <div className="container">
       <h1>My Orders</h1>
-      {Table}
+      {isLoading ? <SkeletonLoader length={20} /> : Table}
     </div>
   );
 };
