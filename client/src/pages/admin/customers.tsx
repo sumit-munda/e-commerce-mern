@@ -55,8 +55,6 @@ const Customers = () => {
 
   const { isLoading, data, isError, error } = useAllUsersQuery(user?._id!);
 
-  console.log(data);
-
   const [rows, setRows] = useState<DataType[]>([]);
 
   const [deleteUser] = useDeleteUserMutation();
