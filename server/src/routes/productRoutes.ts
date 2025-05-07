@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { singleUpload } from "../middlewares/mutlerMiddleware.js";
+import { multiUpload, singleUpload } from "../middlewares/mutlerMiddleware.js";
 import {
   deleteProduct,
   deleteReview,
@@ -22,15 +22,15 @@ router.get("/latest", getLatestProducts);
 router.get("/categories", getAllCategories);
 router.get("/admin-products",adminOnly,  getAdminProducts);
 
-router.post("/", adminOnly, singleUpload, postProduct);
+router.post("/", adminOnly, multiUpload, postProduct);
 
 router
   .route("/:id")
   .get(getSingleProduct)
-  .put(adminOnly, singleUpload, updateProduct)
+  .put(adminOnly, multiUpload, updateProduct)
   .delete(adminOnly, deleteProduct);
 
 router.route("/reviews/:id").get(getAllReviewsOfProdcuts).post(postReview);
 
-router.delete("/reveiews/:id", deleteReview);
+router.delete("/reviews/:id", deleteReview);
 export default router;

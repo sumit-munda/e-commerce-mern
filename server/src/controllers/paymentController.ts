@@ -46,7 +46,7 @@ export const applyDiscount = TryCatch(async (req, res, next) => {
 export const allCoupons = TryCatch(async (req, res, next) => {
   const allCoupons = await coupons.find({});
 
-  res.status(201).json({
+  res.status(200).json({
     success: true,
     allCoupons,
   });
@@ -58,7 +58,7 @@ export const getCoupon = TryCatch(async (req, res, next) => {
   const coupon = await coupons.findById(id);
   if (!coupon) return next(new ErrorHandler("Invalid Coupon ID", 400));
 
-  res.status(201).json({
+  res.status(200).json({
     success: true,
     coupon,
   });

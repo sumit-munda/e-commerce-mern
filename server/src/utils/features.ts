@@ -1,21 +1,72 @@
-import { nodeCache } from "../app.js";
+import mongoose from "mongoose";
+import { nodeCache, redis } from "../app.js";
 import { products } from "../models/productModel.js";
 import { InvalidateCacheProps, OrderItemType } from "../types/types.js";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
+import { reviews } from "../models/reviewModel.js";
+import { Redis } from "ioredis";
 
-export const invalidateCache = ({
+// * getBase64 is typically used to convert uploaded image files to base64 format
+const getBase64 = (file: Express.Multer.File) =>
+  `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+
+export const uploadToCloudinary = async (files: Express.Multer.File[]) => {
+  const promises = files.map(async (file) => {
+    return new Promise<UploadApiResponse | undefined>((resolve, reject) => {
+      cloudinary.uploader.upload(getBase64(file), (error, result) => {
+        if (error) return reject(error);
+        resolve(result!);
+      });
+    });
+  });
+
+  const result = await Promise.all(promises);
+
+  return result.map((i) => ({
+    public_id: i?.public_id,
+    url: i?.secure_url,
+  }));
+};
+
+export const deleteFromCloudinary = async (publicIds: string[]) => {
+  const promises = publicIds.map((id) => {
+    return new Promise<void>((resolve, reject) => {
+      cloudinary.uploader.destroy(id, (error) => {
+        if (error) return reject(error);
+        resolve();
+      });
+    });
+  });
+
+  await Promise.all(promises);
+};
+
+export const connectRedis = () => {
+  const redis = new Redis(process.env.REDIS_URI!);
+
+  redis.on("connect", () => console.log("Redis Connected"));
+  redis.on("erorr", (e) => console.log(e));
+  return redis;
+};
+
+export const invalidateCache = async ({
   product,
   order,
   admin,
+  review,
   userId,
   orderId,
   productId,
 }: InvalidateCacheProps) => {
+  if (review) {
+    await redis.del([`reveiws-${productId}`]);
+  }
   if (product) {
     const productKeys: string[] = [
       "latest-products",
       "categories",
       "all-products",
-      "admin-products"
+      "admin-products",
     ];
 
     if (typeof productId === "string") productKeys.push(`product-${productId}`);
@@ -24,7 +75,9 @@ export const invalidateCache = ({
       productId.forEach((i) => {
         productKeys.push(`product-${i}`);
       });
-    nodeCache.del(productKeys);
+    // nodeCache.del(productKeys);
+
+    await redis.del(productKeys);
   }
 
   if (order) {
@@ -34,11 +87,18 @@ export const invalidateCache = ({
       `order-${orderId}`,
     ];
 
-    nodeCache.del(orderKeys);
+    // nodeCache.del(orderKeys);
+    await redis.del(orderKeys);
   }
 
   if (admin) {
-    nodeCache.del(["admin-stats", "admin-pie-charts", "admin-bar-charts", "admin-line-charts"])
+    // nodeCache.del([
+    await redis.del([
+      "admin-stats",
+      "admin-pie-charts",
+      "admin-bar-charts",
+      "admin-line-charts",
+    ]);
   }
 };
 
@@ -124,7 +184,7 @@ export const getChartData = ({
 
     if (monthDiff < length) {
       if (property) {
-        data[length - monthDiff - 1] += i[property]! ;
+        data[length - monthDiff - 1] += i[property]!;
       } else {
         data[length - monthDiff - 1] += 1;
       }
@@ -134,4 +194,18 @@ export const getChartData = ({
   return data;
 };
 
+export const findAverageRating = async (productId: mongoose.Types.ObjectId) => {
+  let totalRating = 0;
 
+  const productReviews = await reviews.find({ product: productId });
+  productReviews.forEach((review) => {
+    totalRating += review.rating;
+  });
+
+  const averateRating = Math.floor(totalRating / productReviews.length) || 0;
+
+  return {
+    numOfReviews: productReviews.length,
+    ratings: averateRating,
+  };
+};

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { Types } from "mongoose";
 
 export interface PostUserRequestBody {
   name: string;
@@ -10,12 +11,18 @@ export interface PostUserRequestBody {
   dob: Date;
 }
 
-export interface PostProductRequestBody {
+export interface Photo {
+  public_id: string;
+  url: string;
+}
+
+export interface PostProductRequestBody extends Document {
   name: string;
-  photo: string;
+  photos: Types.DocumentArray<Photo>;
   price: number;
   stock: number;
   category: string;
+  description: string;
 }
 
 export type ControllerType = (
@@ -47,8 +54,9 @@ export type InvalidateCacheProps = {
   product?: boolean;
   order?: boolean;
   admin?: boolean;
-  userId?:string;
-  orderId?:string;
+  review?: boolean;
+  userId?: string;
+  orderId?: string;
   productId?: string | string[];
 };
 
