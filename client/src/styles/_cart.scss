@@ -1,7 +1,7 @@
 .cart {
   padding: 2rem 4rem;
-  @include flex(row, space-between, flex-start, 4rem);
-  height: calc(10vh - 4rem);
+  @include flex(row, unset, unset, 4rem);
+  height: calc(100vh - 4rem);
 
   > main {
     width: 70%;
@@ -19,19 +19,13 @@
     width: 30%;
     padding: 4rem;
     @include flex(column, center, stretch, 1.5rem);
-
     > input {
       padding: 1rem;
       border: 1px solid rgba(0, 0, 0, 0.28);
       outline: none;
       border-radius: 5px;
-      -webkit-border-radius: 5px;
-      -moz-border-radius: 5px;
-      -ms-border-radius: 5px;
-      -o-border-radius: 5px;
       margin-top: 2rem;
     }
-
     > p {
       font-size: 1.1rem;
     }
@@ -44,29 +38,25 @@
       @include flex;
       text-transform: uppercase;
       letter-spacing: 2px;
-      border-radius: 5;
-      -webkipxt-border-radius: 5;
-      -moz-border-radius: 5;
-      -ms-border-radius: 5;
-      -o-border-radius: 5;
+      border-radius: 5px;
       &:hover {
         opacity: 0.8;
       }
+    }
 
-      > span {
-        margin-top: -1rem;
-        @include flex(row, center, center, 5px);
-        > code {
-          font-weight: 900;
-          align-self: flex-end;
-        }
+    > span {
+      margin-top: -1rem;
+      @include flex(row, center, center, 5px);
+      > code {
+        font-weight: 900;
+        align-self: flex-end;
       }
     }
   }
 }
 
 .cart-item {
-  padding: 2rem;
+  padding: 1rem;
   @include flex(row, flex-start, center, 3rem);
   > img {
     @include square(10rem);
@@ -94,21 +84,13 @@
     button {
       border: none;
       @include square(2rem);
-      button {
-        border: none;
-        @include square(2rem);
-        border-radius: 5px;
-        -webkit-border-radius: 5px;
-        -moz-border-radius: 5px;
-        -ms-border-radius: 5px;
-        -o-border-radius: 5px;
-        @include flex;
-        cursor: pointer;
-        font-size: 1.2rem;
-        &:hover {
-            background-color: $color2;
-            color: $color1;
-        }
+      border-radius: 5px;
+      @include flex;
+      cursor: pointer;
+      font-size: 1.2rem;
+      &:hover {
+        background-color: $color2;
+        color: $color1;
       }
     }
   }
@@ -120,7 +102,7 @@
     cursor: pointer;
     font-size: 1.2rem;
     &:hover {
-        color: red;
+      color: red;
     }
   }
 }

@@ -2,6 +2,7 @@ import { FaTrash } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { server } from "../redux/store";
 import { CartItem } from "../types/types";
+import { transformImage } from "../utils/features";
 
 type CartItemsProps = {
   cartItem: CartItem;
@@ -19,7 +20,7 @@ const CartItemCard = ({
   const { photo, name, productId, price, quantity } = cartItem;
   return (
     <div className="cart-item">
-      <img src={`${server}/${photo}`} alt={name} />
+      <img src={transformImage(photo)} alt={name} />
       <article>
         <NavLink to={`/product/${productId}`}>{name}</NavLink>
         <span>₹{price}</span>

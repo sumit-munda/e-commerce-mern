@@ -1,57 +1,79 @@
-import { ChangeEvent, FormEvent, useState } from "react";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
+import { FormEvent, useState } from "react";
 import { useSelector } from "react-redux";
-import { userReducerInitialState } from "../../../types/reducer.types";
-import { useNewProductMutation } from "../../../redux/api/productAPI";
-import { responseToast } from "../../../utils/features";
 import { useNavigate } from "react-router-dom";
+import AdminSidebar from "../../../components/admin/AdminSidebar";
+import { useNewProductMutation } from "../../../redux/api/productAPI";
+import { userReducerInitialState } from "../../../types/reducer.types";
+import { responseToast } from "../../../utils/features";
+import { useFileHandler } from "6pp";
+import { RootState } from "../../../redux/store";
 
 const NewProduct = () => {
   const { user } = useSelector(
     (state: { userReducer: userReducerInitialState }) => state.userReducer
   );
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const [name, setName] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [price, setPrice] = useState<number>(1000);
   const [stock, setStock] = useState<number>(1);
-  const [photoPrev, setPhotoPrev] = useState<string>("");
-  const [photo, setPhoto] = useState<File>();
+  // const [photoPrev, setPhotoPrev] = useState<string>("");
+  // const [photo, setPhoto] = useState<File>();
+  const [description, setDescription] = useState<string>("");
 
   const [newProduct] = useNewProductMutation();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const file: File | undefined = e.target.files?.[0];
+  const photos = useFileHandler("multiple", 10, 5);
 
-    const reader: FileReader = new FileReader();
+  // const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const file: File | undefined = e.target.files?.[0];
 
-    if (file) {
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setPhotoPrev(reader.result);
-          setPhoto(file);
-        }
-      };
+  //   const reader: FileReader = new FileReader();
+
+  //   if (file) {
+  //     reader.readAsDataURL(file);
+  //     reader.onloadend = () => {
+  //       if (typeof reader.result === "string") {
+  //         setPhotoPrev(reader.result);
+  //         setPhoto(file);
+  //       }
+  //     };
+  //   }
+  // };
+
+  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      if (!name || !price || stock < 0 || !category) return;
+
+      if (!photos.file || photos.file.length === 0) return;
+
+      const formData = new FormData();
+
+      formData.set("name", name);
+      formData.set("description", description);
+      formData.set("price", price.toString());
+      formData.set("stock", stock.toString());
+      // formData.set("photo", photo);
+      formData.set("category", category);
+      photos.file.forEach((file) => {
+        formData.append("photos", file);
+      });
+
+      const res = await newProduct({ id: user?._id!, formData });
+
+      responseToast(res, navigate, "/admin/product");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const submitHandler = async(e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!name || !price || stock < 0 || !photo || !category) return;
-    const formData = new FormData();
-
-    formData.set("name", name);
-    formData.set("price", price.toString());
-    formData.set("stock", stock.toString());
-    formData.set("photo", photo);
-    formData.set("category", category);
-
-    const res = await newProduct({ id: user?._id!, formData });
-
-    responseToast(res, navigate, "/admin/product")
-  };
   return (
     <div className="admin-container">
       <AdminSidebar />
@@ -67,6 +89,15 @@ const NewProduct = () => {
                 placeholder="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label>Description</label>
+              <textarea
+                required
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
             <div>
@@ -102,12 +133,26 @@ const NewProduct = () => {
             </div>
 
             <div>
-              <label>Photo</label>
-              <input required type="file" onChange={changeImageHandler} />
+              <label>Photos</label>
+              <input
+                required
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={photos.changeHandler}
+              />
             </div>
 
-            {photoPrev && <img src={photoPrev} alt="New Image" />}
-            <button type="submit">Create</button>
+            {photos.error && <p>{photos.error}</p>}
+            {photos.preview &&
+              photos.preview.map((img, i) => (
+                <img key={i} src={img} alt="New Image" />
+              ))}
+
+            {/* {photoPrev && <img src={photoPrev} alt="New Image" />} */}
+            <button type="submit" disabled={isLoading}>
+              Create
+            </button>
           </form>
         </article>
       </main>

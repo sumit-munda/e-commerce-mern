@@ -1,4 +1,16 @@
-import { Bar, CartItem, Line, Order, Pie, Product, ShippingInfo, Stats, User } from "./types";
+import {
+  Bar,
+  CartItem,
+  CouponType,
+  Line,
+  Order,
+  Pie,
+  Product,
+  Review,
+  ShippingInfo,
+  Stats,
+  User,
+} from "./types";
 
 export type CustomError = {
   status: number;
@@ -26,6 +38,11 @@ export type UserResponse = {
 export type AllProductsResponse = {
   success: boolean;
   latestProducts: Product[];
+};
+
+export type AllReviewsResponse = {
+  success: boolean;
+  productReviews: Review[];
 };
 
 export type AdminProductsResponse = {
@@ -60,6 +77,13 @@ export type ProductDetailsResponse = {
 export type NewProductRequest = {
   id: string;
   formData: FormData;
+};
+
+export type NewReviewRequest = {
+  rating: number;
+  comment: string;
+  userId?: string;
+  productId: string;
 };
 
 export type UpdateProductRequest = {
@@ -121,7 +145,18 @@ export type BarResponse = {
   success: boolean;
   charts: Bar;
 };
+
 export type LineResponse = {
   success: boolean;
   charts: Line;
+};
+
+export type AllDiscountResponse = {
+  success: boolean;
+  allCoupons: CouponType[];
+};
+
+export type SingleDiscountResponse = {
+  success: boolean;
+  coupon: CouponType;
 };

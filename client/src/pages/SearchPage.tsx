@@ -10,8 +10,11 @@ import {
 import { addToCart } from "../redux/reducer/cartReducer";
 import { CustomError } from "../types/api.types";
 import { CartItem } from "../types/types";
+import { useSearchParams } from "react-router-dom";
 
 const SearchPage = () => {
+  const searchQuery = useSearchParams()[0];
+
   const {
     data: categoriesResponse,
     isLoading: loadingCategories,
@@ -22,7 +25,7 @@ const SearchPage = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
   const [maxPrice, setMaxPrice] = useState(100000);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(searchQuery.get("category") || "");
   const [page, setPage] = useState(1);
 
   const {
@@ -125,7 +128,7 @@ const SearchPage = () => {
                 price={i.price}
                 stock={i.stock}
                 handler={addToCartHandler}
-                photo={i.photo}
+                photos={i.photos}
               />
             ))}
           </div>

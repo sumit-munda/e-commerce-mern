@@ -22,7 +22,7 @@ const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const OrderDetailsPage = lazy(() => import("./pages/OrderDetailsPage"));
 const CheckOutPage = lazy(() => import("./pages/CheckOutPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
-const NotFound = lazy(() => import("./pages/NotFound"))
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // * Admin Routes Importing
 
@@ -31,6 +31,7 @@ const Products = lazy(() => import("./pages/admin/products"));
 const Customers = lazy(() => import("./pages/admin/customers"));
 const Transaction = lazy(() => import("./pages/admin/transaction"));
 const Barcharts = lazy(() => import("./pages/admin/charts/barcharts"));
+const Discount = lazy(() => import("./pages/admin/discount"));
 const Piecharts = lazy(() => import("./pages/admin/charts/piecharts"));
 const Linecharts = lazy(() => import("./pages/admin/charts/linecharts"));
 const Coupon = lazy(() => import("./pages/admin/apps/coupon"));
@@ -42,6 +43,12 @@ const ProductManagement = lazy(
 );
 const TransactionManagement = lazy(
   () => import("./pages/admin/management/transactionmanagement")
+);
+const DiscountManagement = lazy(
+  () => import("./pages/admin/management/discountmanagement")
+);
+const NewDiscount = lazy(
+  () => import("./pages/admin/management/newdiscount")
 );
 
 const App = () => {
@@ -119,6 +126,7 @@ const App = () => {
             { path: "/admin/product", element: <Products /> },
             { path: "/admin/customer", element: <Customers /> },
             { path: "/admin/transaction", element: <Transaction /> },
+            { path: "/admin/discount", element: <Discount /> },
             { path: "/admin/chart/bar", element: <Barcharts /> },
             { path: "/admin/chart/pie", element: <Piecharts /> },
             { path: "/admin/chart/line", element: <Linecharts /> },
@@ -132,6 +140,14 @@ const App = () => {
             {
               path: "/admin/transaction/:id",
               element: <TransactionManagement />,
+            },
+            {
+              path: "/admin/discount/new",
+              element: <NewDiscount/>
+            },
+            {
+              path: "/admin/discount/:id",
+              element: <DiscountManagement />,
             },
           ],
         },

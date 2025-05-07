@@ -118,7 +118,6 @@ const CartPage = () => {
 
         {cartItems.length > 0 && <NavLink to="/shipping">Checkout</NavLink>}
       </aside>
-      Cart Page
     </div>
   );
 };

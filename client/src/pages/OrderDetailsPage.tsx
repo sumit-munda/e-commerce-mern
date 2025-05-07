@@ -6,6 +6,7 @@ import { useOrderDetailsQuery } from "../redux/api/orderAPI";
 import { server } from "../redux/store";
 import { userReducerInitialState } from "../types/reducer.types";
 import { Order, OrderItem } from "../types/types";
+import { transformImage } from "../utils/features";
 
 const defaultData: Order = {
   shippingInfo: {
@@ -71,7 +72,7 @@ const OrderDetailsPage = () => {
                 <ProductCard
                   key={i._id}
                   name={i.name}
-                  photo={`${server}/${i.photo}`}
+                  photo={i.photo}
                   productId={i.productId}
                   _id={i._id}
                   quantity={i.quantity}
@@ -126,7 +127,7 @@ const ProductCard = ({
   productId,
 }: OrderItem) => (
   <div className="transaction-product-card">
-    <img src={photo} alt={name} />
+    <img src={transformImage(photo)} alt={name} />
     <NavLink to={`/product/${productId}`}>{name}</NavLink>
     <span>
       ₹{price} X {quantity} = ₹{price * quantity}
