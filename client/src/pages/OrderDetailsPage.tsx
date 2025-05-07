@@ -3,7 +3,6 @@ import { Navigate, NavLink, useParams } from "react-router-dom";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import { SkeletonLoader } from "../components/Loader";
 import { useOrderDetailsQuery } from "../redux/api/orderAPI";
-import { server } from "../redux/store";
 import { userReducerInitialState } from "../types/reducer.types";
 import { Order, OrderItem } from "../types/types";
 import { transformImage } from "../utils/features";

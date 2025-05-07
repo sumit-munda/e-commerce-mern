@@ -1,16 +1,15 @@
-import { FaTrash } from "react-icons/fa";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
-import { SkeletonLoader } from "../../../components/Loader";
-import { FormEvent, useEffect, useState } from "react";
+import { useFetchData } from "6pp";
 import axios from "axios";
-import { RootState, server } from "../../../redux/store";
+import { FormEvent, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { FaTrash } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { useFetchData, useInputValidation } from "6pp";
-import toast from "react-hot-toast";
+import AdminSidebar from "../../../components/admin/AdminSidebar";
+import { SkeletonLoader } from "../../../components/Loader";
+import { RootState, server } from "../../../redux/store";
 import {
-  AllDiscountResponse,
-  SingleDiscountResponse,
+  SingleDiscountResponse
 } from "../../../types/api.types";
 
 const DiscountManagement = () => {

@@ -23,7 +23,7 @@ const ProductDetailsPage = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.userReducer);
 
-  const { isLoading, isError, error, data } = useProductDetailsQuery(
+  const { isLoading, isError, data } = useProductDetailsQuery(
     params.id!
   );
   const reviewsResponse = useAllReviewsQuery(params.id!);

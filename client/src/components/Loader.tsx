@@ -18,7 +18,6 @@ interface SkeletonProps {
 export const SkeletonLoader = ({
   width = "unset",
   length = 3,
-  height = "30px",
   containerHeight = "unset",
 }: SkeletonProps) => {
   const skeletons = Array.from({ length }, (_, idx) => (
