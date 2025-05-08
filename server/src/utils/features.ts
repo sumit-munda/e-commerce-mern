@@ -45,7 +45,7 @@ export const connectRedis = () => {
   const redis = new Redis(process.env.REDIS_URI!);
 
   redis.on("connect", () => console.log("Redis Connected"));
-  redis.on("erorr", (e) => console.log(e));
+  redis.on("error", (e) => console.log("Redis Error", e));
   return redis;
 };
 
