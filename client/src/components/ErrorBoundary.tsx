@@ -1,27 +1,34 @@
-import React, { useEffect, useState } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 interface Props {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;
 }
 
-const ErrorBoundary: React.FC<Props> = ({ children, fallback }) => {
-  const [hasError, setHasError] = useState(false);
+interface State {
+  hasError: boolean;
+}
 
-  useEffect(() => {
-    const errorHandler = (event: ErrorEvent) => {
-      setHasError(true);
-      console.error("Caught error:", event.error);
-    };
+class ErrorBoundary extends Component<Props, State> {
+  state: State = {
+    hasError: false,
+  };
 
-    window.addEventListener("error", errorHandler);
-    return () => window.removeEventListener("error", errorHandler);
-  }, []);
-
-  if (hasError) {
-    return <>{fallback ?? <p>Something went wrong.</p>}</>;
+  static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
-  return <>{children}</>;
-};
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error("React rendering error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback ?? <p>Something went wrong.</p>;
+    }
+
+    return this.props.children;
+  }
+}
 
 export default ErrorBoundary;

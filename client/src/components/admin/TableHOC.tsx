@@ -10,12 +10,12 @@ import {
   TableOptions,
 } from "react-table";
 
-function TableHOC<T extends Object>(
+function TableHOC<T extends object>(
   columns: Column<T>[],
   data: T[],
   containerClassname: string,
   heading: string,
-  showPagination: boolean = false
+  showPagination: boolean = false,
 ) {
   return function HOC() {
     const options: TableOptions<T> = {
@@ -46,35 +46,54 @@ function TableHOC<T extends Object>(
 
         <table className="table" {...getTableProps()}>
           <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                    {column.render("Header")}
-                    {column.isSorted && (
-                      <span>
-                        {" "}
-                        {column.isSortedDesc ? (
-                          <AiOutlineSortDescending />
-                        ) : (
-                          <AiOutlineSortAscending />
+            {headerGroups.map((headerGroup) => {
+              const { key: groupKey, ...groupProps } =
+                headerGroup.getHeaderGroupProps();
+
+              return (
+                <tr key={groupKey} {...groupProps}>
+                  {headerGroup.headers.map((column) => {
+                    const { key: columnKey, ...columnProps } =
+                      column.getHeaderProps(column.getSortByToggleProps());
+
+                    return (
+                      <th key={columnKey} {...columnProps}>
+                        {column.render("Header")}
+                        {column.isSorted && (
+                          <span>
+                            {" "}
+                            {column.isSortedDesc ? (
+                              <AiOutlineSortDescending />
+                            ) : (
+                              <AiOutlineSortAscending />
+                            )}
+                          </span>
                         )}
-                      </span>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
+                      </th>
+                    );
+                  })}
+                </tr>
+              );
+            })}
           </thead>
+
           <tbody {...getTableBodyProps()}>
             {page.map((row) => {
               prepareRow(row);
 
+              const { key: rowKey, ...rowProps } = row.getRowProps();
+
               return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                  ))}
+                <tr key={rowKey} {...rowProps}>
+                  {row.cells.map((cell) => {
+                    const { key: cellKey, ...cellProps } = cell.getCellProps();
+
+                    return (
+                      <td key={cellKey} {...cellProps}>
+                        {cell.render("Cell")}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })}

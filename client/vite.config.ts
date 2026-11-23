@@ -7,8 +7,10 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1000, // or any size in KB
   },
-  server: {
-    host: true,
-    port: 5173,
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    strictPort: true,
+    allowedHosts: [ 'frontend.bigbug.in','ecom-mern-client-load-balancer-1192477327.ap-south-1.elb.amazonaws.com'], 
   },
 });

@@ -1,15 +1,16 @@
+import { useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
-import Header from "../components/Header";
-import { User } from "../types/types";
 import Footer from "../components/Footer";
+import Header from "../components/Header";
+import ScrollToTop from "../components/ScrollToTop";
+import type { RootState } from "../redux/store";
 
-interface MainLayoutProps {
-  user: User | null;
-}
+const MainLayout = () => {
+  const user = useSelector((state: RootState) => state.userReducer.user);
 
-const MainLayout = ({ user }: MainLayoutProps) => {
   return (
     <>
+      <ScrollToTop />
       <Header user={user} />
       <Outlet />
       <Footer />

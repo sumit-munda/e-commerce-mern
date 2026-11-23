@@ -8,10 +8,13 @@ import {
   UserOrdersResponse,
 } from "../../types/api.types";
 
+// const server = "https://backend.bigbug.in";
+const server = "http://localhost:5000";
+
 export const orderAPI = createApi({
   reducerPath: "orderApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_SERVER}/api/v1/orders`,
+    baseUrl: `${server}/api/v1/orders`,
   }),
   tagTypes: ["orders"],
   endpoints: (builder) => ({

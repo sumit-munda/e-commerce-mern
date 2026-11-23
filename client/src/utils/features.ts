@@ -6,25 +6,48 @@ import toast from "react-hot-toast";
 import moment from "moment";
 
 type ResType =
-  | {
-      data: MessageResponse;
+  | { data: MessageResponse }
+  | { error: FetchBaseQueryError | SerializedError };
+
+const getErrorMessage = (
+  error: FetchBaseQueryError | SerializedError,
+): string => {
+  if ("status" in error) {
+    if (
+      "data" in error &&
+      typeof error.data === "object" &&
+      error.data !== null &&
+      "message" in error.data &&
+      typeof error.data.message === "string"
+    ) {
+      return error.data.message;
     }
-  | {
-      error: FetchBaseQueryError | SerializedError;
-    };
+
+    if ("error" in error && typeof error.error === "string") {
+      return error.error;
+    }
+  }
+
+  if ("message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+
+  return "Something went wrong. Please try again.";
+};
 
 export const responseToast = (
   res: ResType,
-  navigate: NavigateFunction | null,
-  url: string
+  navigate?: NavigateFunction | null,
+  url?: string,
 ) => {
   if ("data" in res) {
     toast.success(res.data.message);
-    if (navigate) navigate(url);
+
+    if (navigate && url) {
+      navigate(url);
+    }
   } else {
-    const error = res.error as FetchBaseQueryError;
-    const messageResponse = error.data as MessageResponse;
-    toast.error(messageResponse.message);
+    toast.error(getErrorMessage(res.error));
   }
 };
 

@@ -14,10 +14,13 @@ import {
   UpdateProductRequest,
 } from "../../types/api.types";
 
+// const server = "https://backend.bigbug.in";
+const server = "http://localhost:5000";
+
 export const productAPI = createApi({
   reducerPath: "productApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_SERVER}/api/v1/products`,
+    baseUrl: `${server}/api/v1/products`,
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -45,16 +48,31 @@ export const productAPI = createApi({
       SearchProductsRequest
     >({
       query: ({ search, sort, maxPrice, category, page }) => {
-        let base = `/?search=${search}&page=${page}`;
-        if (maxPrice) base += `&price=${maxPrice}`;
-        if (sort) base += `&sort=${sort}`;
-        if (category) base += `&category=${category}`;
-        return base;
+        const params = new URLSearchParams();
+
+        params.set("page", String(page));
+
+        if (search.trim()) {
+          params.set("search", search.trim());
+        }
+
+        if (maxPrice > 0) {
+          params.set("price", String(maxPrice));
+        }
+
+        if (sort) {
+          params.set("sort", sort);
+        }
+
+        if (category) {
+          params.set("category", category);
+        }
+        return `/?${params.toString()}`;
       },
       providesTags: ["products"],
     }),
     productDetails: builder.query<ProductDetailsResponse, string>({
-      query: (id) => id,
+      query: (id) => `/${id}`,
       providesTags: ["products"],
     }),
     allReviews: builder.query<AllReviewsResponse, string>({
@@ -65,10 +83,10 @@ export const productAPI = createApi({
       query: ({ comment, rating, productId, userId }) => ({
         url: `/reviews/${productId}?id=${userId}`,
         method: "POST",
-        body: {comment, rating},
-        headers :{
-          "Content-Type" : "application/json"
-        }
+        body: { comment, rating },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }),
       invalidatesTags: ["products"],
     }),

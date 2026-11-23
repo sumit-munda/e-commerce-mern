@@ -1,24 +1,40 @@
-import { ReactElement } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import type { ReactElement } from "react";
+import { useSelector } from "react-redux";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import type { RootState } from "../redux/store";
 
 interface Props {
-  children?: ReactElement; // * optional JSX to render if access is allowed
-  isAuthenticated: boolean; // * is the user logged in (required)
-  adminOnly?: boolean; // * should this route be accessible to admins only
-  admin?: boolean; // * is the user an admin
-  redirect?: string; // * where to redirect if access is denied
+  children?: ReactElement;
+  adminOnly?: boolean;
+  guestOnly?: boolean;
+  redirect?: string;
 }
 
 const ProtectedRoute = ({
-  isAuthenticated,
   children,
   adminOnly,
-  admin,
-  redirect = "/",
+  guestOnly,
+  redirect,
 }: Props) => {
-  if (!isAuthenticated) return <Navigate to={redirect} />;
-  if (adminOnly && !admin) return <Navigate to={redirect} />;
-  return children ? children : <Outlet />;
+  const user = useSelector((state: RootState) => state.userReducer.user);
+  const location = useLocation();
+
+  // Not signed in
+  if (guestOnly) {
+    return user ? <Navigate to="/" replace /> : (children ?? <Outlet />);
+  }
+
+  // Require authentication
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Require admin access
+  if (adminOnly && user.role !== "admin") {
+    return <Navigate to={redirect ?? "/"} replace />;
+  }
+
+  return children ?? <Outlet />;
 };
 
 export default ProtectedRoute;

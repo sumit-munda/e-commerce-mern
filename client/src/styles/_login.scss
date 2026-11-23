@@ -1,50 +1,311 @@
-.login {
-  height: 90vh;
-  @include flex(column);
+.login-page {
+  min-height: calc(100vh - 76px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem var(--page-gutter);
+  overflow: hidden;
 
-  > main {
+  &__container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: 5rem;
     width: 100%;
-    height: 80%;
-    max-width: 400px;
-    padding: 2rem;
-    @include baseShadow;
-    @include flex(column, center, stretch);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  &__welcome {
+    position: relative;
+    padding: 2rem 0;
+  }
+
+  &__eyebrow {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+
+    span {
+      color: var(--color-primary);
+    }
+  }
+
+  &__description {
+    max-width: 470px;
+    color: var(--color-muted);
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  &__benefits {
+    display: grid;
+    gap: 22px;
+    margin-top: 38px;
+  }
+
+  &__benefit {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
     > div {
-      width: 100%;
-      @include flex(column, flex-start, stretch, 0.2rem);
-      > input,
-      > select {
-        @include inputStyle;
-        border: 1px solid rgba(162, 162, 162, 0.53);
-        border-radius: 5px;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--color-heading);
+        font-size: 0.92rem;
       }
 
-      > p {
-        text-align: center;
-        margin: 2rem;
-      }
-
-      button {
-        width: 70%;
-        margin: auto;
-        height: 3rem;
-        @include btn(unset, rgb(62, 125, 242), white);
-        @include flex;
-        border: 1px solid rgb(62, 125, 242);
-        border-radius: 5px;
-        font-size: 1.05rem;
-        > svg {
-          background-color: white;
-          width: 30%;
-          height: 100%;
-        }
-
-        > span {
-          width: 100%;
-          text-align: center;
-        }
+      p {
+        color: var(--color-muted);
+        font-size: 0.82rem;
       }
     }
+  }
+
+  &__benefit-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+    font-size: 1.1rem;
+  }
+
+  &__decoration {
+    position: absolute;
+    right: 0;
+    bottom: -100px;
+    width: 190px;
+    height: 150px;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  &__decoration-circle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 130px;
+    height: 130px;
+    border: 18px solid var(--color-primary-light);
+    border-radius: 50%;
+  }
+
+  &__decoration-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-primary-dark);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+}
+
+.login-form {
+  position: relative;
+  z-index: 1;
+  padding: 42px 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+
+  &__heading {
+    margin-bottom: 32px;
+    text-align: center;
+
+    h2 {
+      margin: 18px 0 8px;
+      font-size: 1.65rem;
+    }
+
+    p {
+      color: var(--color-muted);
+      font-size: 0.88rem;
+    }
+  }
+
+  &__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+    font-size: 1.4rem;
+  }
+
+  &__google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 54px;
+    padding: 13px 18px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    background: var(--color-surface);
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition:
+      background var(--transition-fast),
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
+
+    svg {
+      width: 21px;
+      height: 21px;
+      flex-shrink: 0;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-primary);
+      background: var(--color-surface-secondary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--color-primary-light);
+      outline-offset: 3px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0;
+
+    &::before,
+    &::after {
+      flex: 1;
+      height: 1px;
+      background: var(--color-border);
+      content: "";
+    }
+
+    span {
+      color: var(--color-muted);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+  }
+
+  &__note {
+    color: var(--color-muted);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    text-align: center;
+  }
+}
+
+@media screen and (max-width: 850px) {
+  .login-page {
+    &__container {
+      grid-template-columns: 1fr 0.9fr;
+      gap: 2rem;
+    }
+
+    &__decoration {
+      display: none;
+    }
+  }
+
+  .login-form {
+    padding: 36px 26px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .login-page {
+    min-height: calc(100vh - 66px);
+    padding: 36px 20px 55px;
+
+    &__container {
+      max-width: 480px;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    &__welcome {
+      padding: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 8vw, 2.7rem);
+    }
+
+    &__description {
+      font-size: 0.9rem;
+    }
+
+    &__benefits {
+      gap: 17px;
+      margin-top: 26px;
+    }
+  }
+
+  .login-form {
+    padding: 32px 24px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .login-page {
+    padding-right: 15px;
+    padding-left: 15px;
+
+    &__benefit {
+      gap: 11px;
+    }
+
+    &__benefit-icon {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .login-form {
+    padding: 28px 18px;
   }
 }

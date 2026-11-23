@@ -1,22 +1,25 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import axios from "axios";
 import {
   AllUsersResponse,
   DeleteUserRequest,
   MessageResponse,
   UserResponse,
 } from "../../types/api.types";
-import { User } from "../../types/types";
-import axios from "axios";
+import { LoginRequest } from "../../types/types";
+
+// const server = "https://backend.bigbug.in";
+const server = "http://localhost:5000";
 
 export const userAPI = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_SERVER}/api/v1/users`,
+    baseUrl: `${server}/api/v1/users`,
   }),
 
   tagTypes: ["users"],
   endpoints: (builder) => ({
-    login: builder.mutation<MessageResponse, User>({
+    login: builder.mutation<MessageResponse, LoginRequest>({
       query: (user) => ({
         url: "/",
         method: "POST",
@@ -39,14 +42,10 @@ export const userAPI = createApi({
 });
 
 export const getUser = async (id: string) => {
-  try {
     const { data }: { data: UserResponse } = await axios.get(
-      `${import.meta.env.VITE_SERVER}/api/v1/users/${id}`
+      `${server}/api/v1/users/${id}`
     );
     return data;
-  } catch (error) {
-    throw error;
-  }
 };
 
 export const { useLoginMutation, useAllUsersQuery, useDeleteUserMutation } = userAPI;

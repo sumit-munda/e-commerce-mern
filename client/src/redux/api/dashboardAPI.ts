@@ -3,13 +3,16 @@ import {
   BarResponse,
   LineResponse,
   PieResponse,
-  StatsResponse
+  StatsResponse,
 } from "../../types/api.types";
+
+// const server = "https://backend.bigbug.in";
+const server = "http://localhost:5000";
 
 export const dashboardAPI = createApi({
   reducerPath: "dashboardApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_SERVER}/api/v1/dashboard`,
+    baseUrl: `${server}/api/v1/dashboard`,
   }),
   endpoints: (builder) => ({
     stats: builder.query<StatsResponse, string>({

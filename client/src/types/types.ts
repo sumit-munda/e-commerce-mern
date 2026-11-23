@@ -2,10 +2,17 @@ export type User = {
   name: string;
   email: string;
   photo: string;
-  gender: string;
-  role: string;
+  gender?: "male" | "female";
+  role: "admin" | "user";
   _id: string;
-  dob: string;
+  dob?: string;
+};
+
+export type LoginRequest = {
+  _id: string;
+  name: string;
+  email: string;
+  photo: string;
 };
 
 export type Product = {
@@ -68,6 +75,8 @@ export type Order = {
     _id: string;
   };
   _id: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type CountAndChange = {

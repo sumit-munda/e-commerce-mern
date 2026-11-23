@@ -1,7 +1,11 @@
 import { useRating } from "6pp";
 import { FaRegStar, FaStar } from "react-icons/fa";
 
-const RatingsComponent = ({ value = 0 }) => {
+interface RatingsProps {
+  value?:number
+}
+
+const RatingsComponent = ({ value = 0 }: RatingsProps) => {
   const { Ratings } = useRating({
     IconFilled: <FaStar />,
     IconOutline: <FaRegStar />,

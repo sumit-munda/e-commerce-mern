@@ -1,7 +1,8 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
-import { VscError } from "react-icons/vsc";
+import { FaArrowRight, FaShoppingBag, FaTag } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import CartItemCard from "../components/CartItemCard";
 import {
   addToCart,
@@ -9,21 +10,24 @@ import {
   discountApplied,
   removeCartItem,
 } from "../redux/reducer/cartReducer";
+import { server } from "../redux/store";
 import { CartReducerInitialState } from "../types/reducer.types";
 import { CartItem } from "../types/types";
-import axios from "axios";
-import { server } from "../redux/store";
+
+type CouponStatus = "idle" | "checking" | "valid" | "invalid";
+
+const formatPrice = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
 
 const CartPage = () => {
   const { cartItems, subtotal, tax, total, shippingCharges, discount } =
     useSelector(
-      (state: { cartReducer: CartReducerInitialState }) => state.cartReducer
+      (state: { cartReducer: CartReducerInitialState }) => state.cartReducer,
     );
 
   const dispatch = useDispatch();
 
-  const [couponCode, setCouponCode] = useState<string>("");
-  const [isValidCouponCode, setIsValidCouponCode] = useState<boolean>(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponStatus, setCouponStatus] = useState<CouponStatus>("idle");
 
   const incrementHandler = (cartItem: CartItem) => {
     if (cartItem.quantity >= cartItem.stock) return;
@@ -41,83 +45,171 @@ const CartPage = () => {
     dispatch(removeCartItem(productId));
   };
 
+  // Recalculate whenever cart contents or discount changes.
   useEffect(() => {
-    const { token: cancelToken, cancel } = axios.CancelToken.source();
+    dispatch(calculatePrice());
+  }, [cartItems, discount, dispatch]);
+
+  // Validate coupon after the user stops typing.
+  useEffect(() => {
+    const code = couponCode.trim();
+    const { token, cancel } = axios.CancelToken.source();
+
+    if (!code || cartItems.length === 0) {
+      dispatch(discountApplied(0));
+      setCouponStatus("idle");
+
+      return () => cancel();
+    }
+
+    dispatch(discountApplied(0));
+    setCouponStatus("checking");
 
     const timeOutId = setTimeout(() => {
       axios
-        .get(`${server}/api/v1/payment/discount?coupon=${couponCode}`, {
-          cancelToken,
+        .get(`${server}/api/v1/payment/discount`, {
+          params: { coupon: code },
+          cancelToken: token,
         })
-        .then((res) => {
-          dispatch(discountApplied(res.data.discount));
-          setIsValidCouponCode(true);
-          dispatch(calculatePrice());
+        .then((response) => {
+          dispatch(discountApplied(response.data.discount));
+          setCouponStatus("valid");
         })
-        .catch(() => {
-          dispatch(discountApplied(0));
-          setIsValidCouponCode(false);
-          dispatch(calculatePrice());
-        });
-    }, 1000);
-    return () => {
-      clearInterval(timeOutId);
-      cancel();
-      setIsValidCouponCode(false);
-    };
-  }, [couponCode]);
+        .catch((error) => {
+          if (axios.isCancel(error)) return;
 
-  useEffect(() => {
-    dispatch(calculatePrice());
-  }, [cartItems]);
+          dispatch(discountApplied(0));
+          setCouponStatus("invalid");
+        });
+    }, 700);
+
+    return () => {
+      clearTimeout(timeOutId);
+      cancel();
+    };
+  }, [couponCode, cartItems.length, dispatch]);
+
+  const itemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   return (
-    <div className="cart">
-      <main>
-        {cartItems.length > 0 ? (
-          cartItems.map((i, idx) => (
-            <CartItemCard
-              key={idx}
-              cartItem={i}
-              incrementHandler={incrementHandler}
-              decrementHandler={decrementHandler}
-              removeHandler={removeHandler}
-            />
-          ))
-        ) : (
-          <h1>No Items Added</h1>
-        )}
-      </main>
-      <aside>
-        <p>SubTotal: ₹{subtotal}</p>
-        <p>Shipping Charges: ₹{shippingCharges}</p>
-        <p>Tax: ₹{tax}</p>
-        <p>
-          Discount: <em className="red"> - ₹{discount}</em>
-        </p>
-        <p>
-          <b>Total: {total}</b>
-        </p>
-        <input
-          type="text"
-          placeholder="Coupon Code"
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value)}
-        />
+    <div className="cart-page">
+      <header className="cart-page__header">
+        <div>
+          <span className="cart-page__eyebrow">YOUR SHOPPING BAG</span>
+          <h1>Shopping Cart</h1>
+          <p>
+            {itemCount} {itemCount === 1 ? "item" : "items"} in your cart
+          </p>
+        </div>
 
-        {couponCode &&
-          (isValidCouponCode ? (
-            <span className="green">
-              ₹{discount} off using the <code>{couponCode}</code>
-            </span>
-          ) : (
-            <span className="red">
-              Invalid Coupon <VscError />
-            </span>
-          ))}
+        <Link to="/search" className="cart-page__continue">
+          Continue shopping <FaArrowRight />
+        </Link>
+      </header>
 
-        {cartItems.length > 0 && <NavLink to="/shipping">Checkout</NavLink>}
-      </aside>
+      {cartItems.length > 0 ? (
+        <div className="cart-page__content">
+          <main className="cart-page__items">
+            <div className="cart-page__section-heading">
+              <h2>Your Items</h2>
+              <span>{itemCount} items</span>
+            </div>
+
+            {cartItems.map((item) => (
+              <CartItemCard
+                key={item.productId}
+                cartItem={item}
+                incrementHandler={incrementHandler}
+                decrementHandler={decrementHandler}
+                removeHandler={removeHandler}
+              />
+            ))}
+          </main>
+
+          <aside className="cart-summary">
+            <h2>Order Summary</h2>
+
+            <div className="cart-summary__coupon">
+              <label htmlFor="coupon-code">
+                <FaTag /> Apply coupon
+              </label>
+
+              <input
+                type="text"
+                id="coupon-code"
+                placeholder="Enter coupon code"
+                value={couponCode}
+                onChange={(event) => setCouponCode(event.target.value)}
+                autoComplete="off"
+                aria-describedby="coupon-feedback"
+              />
+
+              <div
+                id="coupon-feedback"
+                className={`cart-summary__coupon-feedback cart-summary__coupon-feedback--${couponStatus}`}
+                aria-live="polite"
+              >
+                {couponStatus === "checking" && "Checking coupon..."}
+                {couponStatus === "valid" &&
+                  `${formatPrice(discount)} discount applied.`}
+                {couponStatus === "invalid" && "Invalid coupon code."}
+              </div>
+            </div>
+
+            <div className="cart-summary__breakdown">
+              <div>
+                <span>Subtotal</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+
+              <div>
+                <span>Shipping</span>
+                <span>
+                  {shippingCharges === 0
+                    ? "FREE"
+                    : formatPrice(shippingCharges)}
+                </span>
+              </div>
+
+              <div>
+                <span>Tax (18%)</span>
+                <span>{formatPrice(tax)}</span>
+              </div>
+
+              <div className="cart-summary__discount">
+                <span>Discount</span>
+                <span>- {formatPrice(discount)}</span>
+              </div>
+            </div>
+
+            <div className="cart-summary__total">
+              <span>Total</span>
+              <strong>{formatPrice(total)}</strong>
+            </div>
+
+            <Link to="/shipping" className="cart-summary__checkout">
+              Proceed to checkout <FaArrowRight />
+            </Link>
+
+            <p className="cart-summary__note">
+              Shipping and taxes are calculated based on your order.
+            </p>
+          </aside>
+        </div>
+      ) : (
+        <div className="cart-page__empty">
+          <div className="cart-page__empty-icon">
+            <FaShoppingBag />
+          </div>
+
+          <h2>Your cart is empty</h2>
+          <p>Looks like you haven't added anything to your cart yet.</p>
+
+          <Link to="/search">
+            Explore products <FaArrowRight />
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,7 +1,13 @@
+@import "tokens";
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-background);
   line-height: 1.5;
   font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
 * {
@@ -10,16 +16,38 @@
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+
 body {
-  user-select: none;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-background);
+  user-select: text;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  color: var(--color-heading);
 }
 
 a {
   text-decoration: none;
-  color: black;
+  color: inherit;
 }
 
 button {
+  cursor: pointer;
+
   &:disabled {
     cursor: not-allowed !important;
     opacity: 0.5;
@@ -44,14 +72,23 @@ $color3: rgb(0, 104, 136);
 @import "home";
 @import "cart";
 @import "shipping";
+@import "checkout";
 @import "login";
 @import "search";
 @import "product-details";
+@import "orders";
+@import "order-details";
+@import "_not-found";
 @import "footer";
+@import "admin-styles/sidebar";
 @import "admin-styles/dashboard";
 @import "admin-styles/products";
+@import "admin-styles/customers";
+@import "admin-styles/transactions";
+@import "admin-styles/transaction-management";
+@import "admin-styles/discounts";
+@import "admin-styles/discount-list";
 @import "admin-styles/chart";
-@import "admin-styles/dashboardapp";
 @import "admin-styles/mediaquery";
 
 .container {
@@ -72,106 +109,225 @@ $color3: rgb(0, 104, 136);
   text-align: center;
 }
 
-.header {
-  @include flex(row, flex-end, stretch, 1.2rem);
-  padding: 1rem;
-  a {
-    color: $color2;
-    letter-spacing: 2px;
-    font-size: 1.2rem;
-
-    &:hover {
-      color: $color3;
-    }
-  }
-
-  button {
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    background-color: transparent;
-    &:hover {
-      color: $color3;
-    }
-  }
-
-  dialog {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    width: 100px;
-    position: absolute;
-    left: calc(100% - 100px);
-    top: 8%;
-    > div {
-      @include flex(column, flex-start, center, 0.25rem);
-    }
-  }
-}
-
-.not-found {
-  height: 80vh;
-  @include flex(column);
-  > svg {
-    font-size: 5rem;
-  }
-}
-
-.checkout-container {
-  height: 80vh;
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   width: 100%;
-  margin: auto;
-  @include flex;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
 
-  > form {
-    @include flex(column, flex-start, stretch, 2rem);
-    max-width: 400px;
-    box-shadow: 0 0 10px rgb(0 0 0 / 10%);
-    padding: 4rem;
-    border-radius: 6px;
-    > button {
-      @include btn(1rem, $color3, $color1);
+  &__inner {
+    max-width: var(--container-width);
+    min-height: 76px;
+    margin: 0 auto;
+    padding: 0 var(--page-gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  &__brand {
+    flex-shrink: 0;
+    font-family: var(--font-heading);
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--color-heading);
+
+    span {
+      color: var(--color-primary);
+    }
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    a {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: color var(--transition-fast);
+
+      &:hover,
+      &.active {
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  &__icon-link {
+    position: relative;
+  }
+
+  &__cart-count {
+    position: absolute;
+    top: -3px;
+    right: -4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border: 2px solid var(--color-surface);
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  &__icon-link,
+  &__account-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 1.05rem;
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast);
+
+    &:hover,
+    &.active {
+      background: var(--color-primary-light);
+      color: var(--color-primary-dark);
+    }
+  }
+
+  &__account {
+    position: relative;
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 0;
+    z-index: 110;
+    display: flex;
+    flex-direction: column;
+    min-width: 190px;
+    padding: 0.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+
+    a,
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
       width: 100%;
-      font-size: 1.1rem;
+      padding: 0.75rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--color-text);
+      font-size: 0.9rem;
+      text-align: left;
+      transition: background var(--transition-fast);
+
+      &:hover {
+        background: var(--color-surface-secondary);
+      }
+    }
+
+    button {
+      color: var(--color-danger);
+    }
+  }
+
+  &__signin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-primary-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    &__inner {
+      min-height: 66px;
+      gap: 1rem;
+      padding: 0 16px;
+    }
+
+    &__brand {
+      font-size: 1.4rem;
+    }
+
+    &__nav {
+      gap: 1rem;
+
+      a {
+        font-size: 0.85rem;
+      }
+    }
+
+    &__actions {
+      gap: 0.35rem;
+    }
+
+    &__signin {
+      padding: 0.6rem;
+
+      span {
+        display: none;
+      }
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .site-header {
+    &__inner {
+      gap: 0.5rem;
+      padding: 0 10px;
+    }
+
+    &__nav {
+      gap: 0.65rem;
     }
   }
 }
 
 .admin-container {
   @include grid(1fr 4fr, 2rem);
-  height: 100vh;
-  background-color: rgb(247, 247, 247);
-  > aside {
-    width: 100%;
-    background-color: white;
-    padding: 1rem;
-    z-index: 10;
-    overflow-y: auto;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
-    > div {
-      margin: 2rem 1rem;
-      > h5 {
-        @include heading(2px);
-        opacity: 0.8;
-        margin: 1rem 0;
-      }
-      > ul {
-        @include flex(column, unset, unset, 0.5rem);
-        list-style: none;
-        > li {
-          padding: 0.5rem 1rem;
-          border-radius: 10px;
-          a {
-            color: rgba(0, 0, 0, 0.825);
-            @include flex(row, unset);
-          }
-        }
-      }
-    }
-  }
+  min-height: 100vh;
+  align-items: start;
+  background: var(--color-background);
 }
 
 .table {

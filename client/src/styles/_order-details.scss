@@ -1,0 +1,360 @@
+.order-details-page {
+  min-height: 75vh;
+  padding: 42px var(--page-gutter) 80px;
+  background: var(--color-background);
+}
+
+.order-details-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.order-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 30px;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
+.order-details-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 28px;
+
+  .orders-eyebrow {
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  h1 {
+    margin-bottom: 8px;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+  }
+
+  p {
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+}
+
+.order-progress-card,
+.order-details-section,
+.order-info-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.order-progress-card {
+  padding: 26px 30px;
+  margin-bottom: 24px;
+
+  > h2 {
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+  }
+}
+
+.order-progress {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.order-progress__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 33.33%;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+
+  &.is-completed {
+    color: var(--color-primary-dark);
+
+    .order-progress__icon {
+      border-color: var(--color-primary);
+      color: #fff;
+      background: var(--color-primary);
+    }
+  }
+}
+
+.order-progress__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 50%;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  font-size: 1rem;
+}
+
+.order-progress__line {
+  position: absolute;
+  top: 22px;
+  left: calc(50% + 28px);
+  width: calc(100% - 56px);
+  height: 3px;
+  border-radius: 5px;
+  background: var(--color-border);
+
+  &.is-completed {
+    background: var(--color-primary);
+  }
+}
+
+.order-progress__note {
+  margin-top: 20px;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.order-details-section {
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.order-section-heading {
+  padding: 22px 26px;
+  border-bottom: 1px solid var(--color-border);
+
+  h2 {
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+  }
+
+  p {
+    color: var(--color-muted);
+    font-size: 0.82rem;
+  }
+}
+
+.order-items-list {
+  padding: 0 26px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.order-item__image {
+  display: block;
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-secondary);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.order-item__info {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+
+  > span {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+  }
+}
+
+.order-item__name {
+  overflow: hidden;
+  color: var(--color-heading);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
+.order-item__total {
+  flex-shrink: 0;
+  color: var(--color-heading);
+  font-size: 0.95rem;
+}
+
+.order-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.order-info-card {
+  padding: 24px;
+
+  > strong {
+    display: block;
+    margin: 20px 0 8px;
+    color: var(--color-heading);
+    font-size: 0.95rem;
+  }
+
+  > p {
+    color: var(--color-muted);
+    font-size: 0.87rem;
+    line-height: 1.9;
+  }
+}
+
+.order-info-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-border);
+
+  svg {
+    color: var(--color-primary);
+    font-size: 1.1rem;
+  }
+
+  h2 {
+    font-size: 1.05rem;
+  }
+}
+
+.order-price-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+
+  > span:last-child {
+    color: var(--color-heading);
+    font-weight: 600;
+  }
+
+  &--discount > span:last-child {
+    color: var(--color-success);
+  }
+
+  &--total {
+    margin-top: 8px;
+    padding-top: 18px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-heading);
+    font-size: 1rem;
+
+    strong:last-child {
+      color: var(--color-primary-dark);
+      font-size: 1.15rem;
+    }
+  }
+}
+
+@media (max-width: 650px) {
+  .order-details-page {
+    padding-top: 28px;
+  }
+
+  .order-details-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .order-progress-card {
+    padding: 22px 16px;
+  }
+
+  .order-progress__step {
+    font-size: 0.72rem;
+  }
+
+  .order-progress__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .order-progress__line {
+    top: 19px;
+    left: calc(50% + 24px);
+    width: calc(100% - 48px);
+  }
+
+  .order-section-heading {
+    padding: 18px;
+  }
+
+  .order-items-list {
+    padding: 0 18px;
+  }
+
+  .order-item {
+    gap: 12px;
+  }
+
+  .order-item__image {
+    width: 68px;
+    height: 68px;
+  }
+
+  .order-details-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 400px) {
+  .order-item {
+    flex-wrap: wrap;
+  }
+
+  .order-item__info {
+    flex-basis: calc(100% - 84px);
+  }
+
+  .order-item__total {
+    margin-left: 80px;
+  }
+
+  .order-progress__step {
+    font-size: 0.66rem;
+  }
+}

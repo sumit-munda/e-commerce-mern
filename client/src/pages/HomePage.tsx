@@ -1,327 +1,211 @@
-import { Slider } from "6pp";
-import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { FaHeadset } from "react-icons/fa";
-import { FaAnglesDown } from "react-icons/fa6";
+import { FaArrowRight } from "react-icons/fa6";
 import { LuShieldCheck } from "react-icons/lu";
 import { TbTruckDelivery } from "react-icons/tb";
 import { useDispatch } from "react-redux";
-import { NavLink } from "react-router-dom";
-import videoCover from "../assets/videos/cover.mp4";
+import { Link, NavLink } from "react-router-dom";
 import { SkeletonLoader } from "../components/Loader";
 import ProductCard from "../components/ProductCard";
-import { useLatestProductsQuery } from "../redux/api/productAPI";
+import {
+  useCategoriesQuery,
+  useLatestProductsQuery,
+} from "../redux/api/productAPI";
 import { addToCart } from "../redux/reducer/cartReducer";
 import { CartItem } from "../types/types";
-
-const clients = [
-  {
-    src: "https://www.vectorlogo.zone/logos/reactjs/reactjs-ar21.svg",
-    alt: "react",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/nodejs/nodejs-ar21.svg",
-    alt: "node",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/mongodb/mongodb-ar21.svg",
-    alt: "mongodb",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/expressjs/expressjs-ar21.svg",
-    alt: "express",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/js_redux/js_redux-ar21.svg",
-    alt: "redux",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/typescriptlang/typescriptlang-ar21.svg",
-    alt: "typescript",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/sass-lang/sass-lang-ar21.svg",
-    alt: "sass",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/firebase/firebase-ar21.svg",
-    alt: "firebase",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/figma/figma-ar21.svg",
-    alt: "figma",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/github/github-ar21.svg",
-    alt: "github",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/docker/docker-ar21.svg",
-    alt: "Docker",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/kubernetes/kubernetes-ar21.svg",
-    alt: "Kubernetes",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/nestjs/nestjs-ar21.svg",
-    alt: "Nest.js",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/graphql/graphql-ar21.svg",
-    alt: "GraphQL",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/jestjsio/jestjsio-ar21.svg",
-    alt: "Jest",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/redis/redis-ar21.svg",
-    alt: "Redis",
-  },
-
-  {
-    src: "https://www.vectorlogo.zone/logos/postgresql/postgresql-ar21.svg",
-    alt: "PostgreSQL",
-  },
-  {
-    src: "https://www.vectorlogo.zone/logos/jenkins/jenkins-ar21.svg",
-    alt: "Jenkins",
-  },
-];
-
-const banners = [
-  "https://res.cloudinary.com/dj5q966nb/image/upload/v1719253445/rmbjpuzctjdbtt8hewaz.png",
-  "https://res.cloudinary.com/dj5q966nb/image/upload/v1719253433/ticeufjqvf6napjhdiee.png",
-];
-const categories = [
-  "Electronics",
-  "Mobiles",
-  "Laptops",
-  "Books",
-  "Fashion",
-  "Appliances",
-  "Furniture",
-  "Home Decor",
-  "Grocery",
-  "Beauty",
-  "Toys",
-  "Fitness",
-];
 
 const services = [
   {
     icon: <TbTruckDelivery />,
-    title: "FREE AND FAST DELIVERY",
-    description: "Free delivery for all orders over $200",
+    title: "Reliable Delivery",
+    description: "Get your orders delivered right to your doorstep.",
   },
   {
     icon: <LuShieldCheck />,
-    title: "SECURE PAYMENT",
-    description: "100% secure payment",
+    title: "Secure Payments",
+    description: "Shop confidently with secure payment processing.",
   },
   {
     icon: <FaHeadset />,
-    title: "24/7 SUPPORT",
-    description: "Get support 24/7",
+    title: "Customer Support",
+    description: "We're here to help whenever you need us.",
   },
 ];
 
 const HomePage = () => {
-  const { data, isLoading, isError } = useLatestProductsQuery();
-
   const dispatch = useDispatch();
 
+  const {
+    data: productData,
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useLatestProductsQuery();
+
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useCategoriesQuery("");
+
   const addToCartHandler = (cartItem: CartItem) => {
-    if (cartItem.stock < 1) return toast.error("Out of stock");
+    if (cartItem.stock < 1) {
+      toast.error("Out of stock");
+      return;
+    }
+
     dispatch(addToCart(cartItem));
     toast.success("Added to cart");
   };
 
-  if (isError) toast.error("Cannot fetch the products");
-
-  const coverMessage =
-    "Fashion isn't just clothes; it's a vibrant language. Silhouettes and textures speak volumes, a conversation starter with every bold print. It's a way to tell our story, a confidence booster, or a playful exploration. From elegance to rebellion, fashion lets us navigate the world in style.".split(
-      " "
-    );
+  const categories = categoriesData?.categories ?? [];
+  const latestProducts = productData?.latestProducts ?? [];
 
   return (
     <>
-      <div className="home">
-        <section></section>
-        <div>
-          <aside>
-            <h1>Categories</h1>
-            <ul>
-              {categories.map((i) => (
-                <li key={i}>
-                  <NavLink to={`/search?caregories=${i.toLowerCase()}`}>
-                    {i}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </aside>
+      <div className="home-page">
+        <section className="home-hero">
+          <div className="home-hero__content">
+            <span className="home-hero__eyebrow">WELCOME TO ECOM CITY</span>
 
-          <Slider
-            autoplay
-            autoplayDuration={1500}
-            showNav={false}
-            images={banners}
-          ></Slider>
-        </div>
-        <h1>
-          latest Products
-          <NavLink to="/search" className="findmore">
-            More
-          </NavLink>
-        </h1>
-        <main>
-          {isLoading ? (
-            <>
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} style={{ height: "25rem" }}>
-                  <SkeletonLoader width="18.75rem" length={1} height="20rem" />
-                  <SkeletonLoader
-                    width="18.75rem"
-                    length={2}
-                    height="1.95rem"
-                  />
-                </div>
-              ))}
-            </>
-          ) : data?.latestProducts && data.latestProducts.length > 0 ? (
-            data.latestProducts.map((i) => (
-              <ProductCard
-                key={i._id}
-                productId={i._id}
-                name={i.name}
-                price={i.price}
-                stock={i.stock}
-                handler={addToCartHandler}
-                photos={i.photos}
-              />
-            ))
-          ) : (
-            <p>No Products Found</p>
-          )}
-        </main>
-      </div>
+            <h1>
+              Everything you need, <span>all in one place.</span>
+            </h1>
 
-      <article className="cover-video-container">
-        <div className="cover-video-overlay"></div>
-        <video autoPlay loop muted src={videoCover} />
-        <div className="cover-video-content">
-          <motion.h2
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Fashion
-          </motion.h2>
-          {coverMessage.map((el, i) => (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{
-                duration: 0.25,
-                delay: i / 10,
-              }}
-              key={i}
-            >
-              {el}{" "}
-            </motion.span>
-          ))}
-        </div>
-        <motion.span
-          animate={{
-            y: [0, 10, 0],
-            transition: {
-              duration: 1,
-              repeat: Infinity,
-            },
-          }}
-        >
-          <FaAnglesDown />
-        </motion.span>
-      </article>
+            <p>
+              Discover products you love, explore greate choices, and enjoy a
+              simpler online shoping experience.
+            </p>
 
-      <article className="our-clients">
-        <div>
-          <h2>Our Clients</h2>
-          <div>
-            {clients.map((client, i) => (
-              <motion.img
-                initial={{
-                  opacity: 0,
-                  x: -10,
-                }}
-                whileInView={{
-                  opacity: 1,
-                  x: 0,
-                  transition: {
-                    delay: i / 20,
-                    ease: "circIn",
-                  },
-                }}
-                src={client.src}
-                alt={client.alt}
-                key={i}
-              />
-            ))}
+            <div className="home-hero__actions">
+              <Link to="/search" className="home-hero__button">
+                Explore Products <FaArrowRight />
+              </Link>
+
+              <a href="#shop-categories" className="home-hero__secondary">
+                Browse Categories
+              </a>
+            </div>
           </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: -100 }}
-            whileInView={{
-              opacity: 1,
-              y: 0,
-              transition: {
-                delay: clients.length / 20,
-              },
-            }}
-          >
-            Trusted By 100+ Companies in 30+ countries
-          </motion.p>
+          <div className="home-hero__visual" aria-hidden="true">
+            <div className="home-hero__visual-circle">
+              <span className="home-hero__visual-label">YOUR NEXT</span>
+              <strong>Great Find</strong>
+              <span className="home-hero__visual-caption">Starts here.</span>
+            </div>
+
+            <div className="home-hero__visual-badge">Discover. Shop. Enjoy</div>
+          </div>
+        </section>
+
+        <section className="home-categories" id="shop-categories">
+          <div className="home-section-heading">
+            <div>
+              <span>EXPLORE OUR COLLECTION</span>
+              <h2>Shop by Category</h2>
+            </div>
+
+            <Link to="/search" className="home-section-link">
+              View all <FaArrowRight />
+            </Link>
+          </div>
+
+          {categoriesLoading ? (
+            <div className="home-categories__list">
+              {Array.from({ length: 6 }, (_, index) => (
+                <SkeletonLoader
+                  key={index}
+                  width="100%"
+                  height="4rem"
+                  length={1}
+                />
+              ))}
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="home-categories__list">
+              {categories.map((category) => (
+                <NavLink
+                  key={category}
+                  to={`/search?category=${encodeURIComponent(category)}`}
+                  className="home-category-card"
+                >
+                  <span>
+                    {category.replace(/\b\w/g, (letter) =>
+                      letter.toUpperCase(),
+                    )}
+                  </span>
+                  <FaArrowRight />
+                </NavLink>
+              ))}
+            </div>
+          ) : (
+            <p className="home-empty-message">
+              No categories available right now.
+            </p>
+          )}
+        </section>
+
+        <section className="home-products">
+          <div className="home-section-heading">
+            <div>
+              <span>FRESH FINDS FOR YOU</span>
+              <h2>Latest Products</h2>
+            </div>
+
+            <Link to="/search" className="home-section-link">
+              View all products <FaArrowRight />
+            </Link>
+          </div>
+
+          {productsError ? (
+            <p className="home-empty-message">
+              We couldn't load products. Please try again later.
+            </p>
+          ) : productsLoading ? (
+            <div className="home-products__grid">
+              {Array.from({ length: 6 }, (_, index) => (
+                <div key={index} className="home-product-skeleton">
+                  <SkeletonLoader width="100%" height="15rem" length={1} />
+                  <SkeletonLoader width="80%" height="1.5rem" length={2} />
+                </div>
+              ))}
+            </div>
+          ) : latestProducts.length > 0 ? (
+            <div className="home-products__grid">
+              {latestProducts.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  productId={product._id}
+                  name={product.name}
+                  price={product.price}
+                  stock={product.stock}
+                  photos={product.photos}
+                  handler={addToCartHandler}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="home-empty-message">No products found.</p>
+          )}
+        </section>
+
+        <div className="home-benefits">
+          <div className="home-section-heading">
+            <div>
+              <span>SHOP WITH CONFIDENCE</span>
+              <h2>A Better Shopping Experience</h2>
+            </div>
+          </div>
+
+          <div className="home-benefits__grid">
+            {services.map((service) => (
+              <article className="home-benefit-card" key={service.title}>
+                <div className="home-benefit-card__icon">{service.icon}</div>
+
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+              </article>
+            ))}
+          </div>
         </div>
-      </article>
-
-      <hr
-        style={{
-          backgroundColor: "rgba(0,0,0,0.1)",
-          border: "none",
-          height: "1px",
-        }}
-      />
-
-      <article className="our-services">
-        <ul>
-          {services.map((service, i) => (
-            <motion.li
-              initial={{ opacity: 0, y: -100 }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-                transition: {
-                  delay: i / 20,
-                },
-              }}
-              key={service.title}
-            >
-              <div>{service.icon}</div>
-              <section>
-                <h3>{service.title}Y</h3>
-                <p>{service.title}</p>
-              </section>
-            </motion.li>
-          ))}
-        </ul>
-      </article>
+      </div>
     </>
   );
 };

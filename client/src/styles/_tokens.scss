@@ -1,0 +1,48 @@
+:root {
+  /* Typography */
+  --font-body: "DM Sans", sans-serif;
+  --font-heading: "Manrope", sans-serif;
+
+  /* Brand */
+  --color-primary: #52745b;
+  --color-primary-dark: #36543e;
+  --color-primary-light: #eaf0e9;
+
+  /* Text */
+  --color-text: #27352c;
+  --color-muted: #78847b;
+  --color-heading: #1f2d23;
+
+  /* Surfaces */
+  --color-background: #f8f9f6;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f1f4ef;
+
+  /* Borders */
+  --color-border: #e4e9e2;
+  --color-border-strong: #cbd5c9;
+
+  /* Feedback */
+  --color-success: #287a4b;
+  --color-danger: #c74747;
+  --color-warning: #b7791f;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgb(39 53 44 / 5%);
+  --shadow-md: 0 8px 24px rgb(39 53 44 / 8%);
+  --shadow-lg: 0 16px 40px rgb(39 53 44 / 12%);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  /* Layout */
+  --container-width: 1280px;
+  --page-gutter: 24px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}

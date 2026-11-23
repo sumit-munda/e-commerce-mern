@@ -1,32 +1,35 @@
+import { CarouselButtonType, MyntraCarousel, Slider, useRating } from "6pp";
+import { useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
+import { FaRegStar, FaStar } from "react-icons/fa";
+import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
+import { TfiWrite } from "react-icons/tfi";
+import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useParams } from "react-router-dom";
+
+import { SkeletonLoader } from "../components/Loader";
+import RatingsComponent from "../components/Ratings";
 import {
   useAllReviewsQuery,
   useNewReviewMutation,
   useProductDetailsQuery,
 } from "../redux/api/productAPI";
-import { SkeletonLoader } from "../components/Loader";
-import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
-import { CarouselButtonType, MyntraCarousel, Slider, useRating } from "6pp";
-import { FormEvent, useRef, useState } from "react";
-import RatingsComponent from "../components/Ratings";
-import toast from "react-hot-toast";
-import { CartItem, Review } from "../types/types";
-import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../redux/reducer/cartReducer";
-import { TfiWrite } from "react-icons/tfi";
-import { FaRegStar, FaStar } from "react-icons/fa";
-import { RootState } from "../redux/store";
-import { responseToast } from "../utils/features";
+import type { RootState } from "../redux/store";
+import type { CartItem, Review } from "../types/types";
 
 const ProductDetailsPage = () => {
-  const params = useParams();
+  const { id = "" } = useParams();
+
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.userReducer);
 
-  const { isLoading, isError, data } = useProductDetailsQuery(
-    params.id!
-  );
-  const reviewsResponse = useAllReviewsQuery(params.id!);
+  const { isLoading, isError, data } = useProductDetailsQuery(id, {
+    skip: !id,
+  });
+
+  const reviewsResponse = useAllReviewsQuery(id, { skip: !id });
 
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -34,26 +37,8 @@ const ProductDetailsPage = () => {
 
   const reviewDialogRef = useRef<HTMLDialogElement>(null);
 
-  const [createReview] = useNewReviewMutation();
-
-  const decrement = () => setQuantity((prev) => prev - 1);
-  const increment = () => {
-    if (data?.product?.stock === quantity)
-      return toast.error(`${data?.product?.stock} available only`);
-    setQuantity((prev) => prev + 1);
-  };
-
-  const addToCartHandler = (cartItem: CartItem) => {
-    if (cartItem.stock < 1) return toast.error("Out of Stock");
-    dispatch(addToCart(cartItem));
-    toast.success("Added to cart");
-  };
-
-  if (isError) return <Navigate to={"/404"} />;
-
-  const showDialog = () => {
-    reviewDialogRef.current?.showModal();
-  };
+  const [createReview, { isLoading: reviewSubmitting }] =
+    useNewReviewMutation();
 
   const {
     Ratings: RatingsEditable,
@@ -71,127 +56,295 @@ const ProductDetailsPage = () => {
     },
   });
 
+  const product = data?.product;
+  const productImages = product?.photos?.map((photo) => photo.url) ?? [];
+  const reviews = reviewsResponse.data?.productReviews ?? [];
+
+  const decrement = () => {
+    setQuantity((previous) => Math.max(1, previous - 1));
+  };
+
+  const increment = () => {
+    if (!product) return;
+
+    setQuantity((previous) => {
+      if (previous >= product.stock) {
+        toast.error(`${product.stock} available only`);
+        return previous;
+      }
+
+      return previous + 1;
+    });
+  };
+
+  const addToCartHandler = () => {
+    if (!product) return;
+
+    if (product.stock < 1) {
+      toast.error("Out of stock");
+      return;
+    }
+
+    if (quantity > product.stock) {
+      toast.error(`Only ${product.stock} available`);
+      return;
+    }
+
+    const cartItem: CartItem = {
+      productId: product._id,
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      photo: product.photos?.[0]?.url ?? "",
+      quantity,
+    };
+
+    dispatch(addToCart(cartItem));
+    toast.success("Added to cart");
+  };
+
+  const showDialog = () => {
+    if (!user) {
+      toast.error("Please sign in to write a review");
+      return;
+    }
+
+    reviewDialogRef.current?.showModal();
+  };
+
   const reviewCloseHandler = () => {
     reviewDialogRef.current?.close();
     setRating(0);
     setReviewComment("");
   };
 
-  const submitReview = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    reviewCloseHandler();
+  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    const res = await createReview({
-      comment: reviewComment,
-      rating,
-      userId: user?._id,
-      productId: params.id!,
-    });
+    if (!user || !id) {
+      toast.error("Please sign in to write a review");
+      return;
+    }
 
-    responseToast(res, null, "");
+    if (!reviewComment.trim()) {
+      toast.error("Please enter your review");
+      return;
+    }
+
+    if (rating < 1 || rating > 5) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    try {
+      const response = await createReview({
+        comment: reviewComment.trim(),
+        rating,
+        userId: user._id,
+        productId: id,
+      }).unwrap();
+
+      toast.success(response.message || "Review submitted successfully");
+      reviewCloseHandler();
+    } catch {
+      toast.error("Unable to submit your review. Please try again.");
+    }
   };
+
+  if (!id || isError || (!isLoading && !product)) {
+    return <Navigate to="/404" replace />;
+  }
 
   return (
     <div className="product-details">
       {isLoading ? (
         <ProductLoader />
-      ) : (
-        <>
-          <main>
-            <section>
-              <Slider
-                showThumbnails
-                showNav={false}
-                onClick={() => setCarouselOpen(true)}
-                images={data?.product?.photos.map((i) => i.url) || []}
-              />
-              {carouselOpen && (
-                <MyntraCarousel
-                  NextButton={NextButton}
-                  PrevButton={PrevButton}
-                  setIsOpen={setCarouselOpen}
-                  images={data?.product?.photos.map((i) => i.url) || []}
-                ></MyntraCarousel>
-              )}
-            </section>
-            <section>
-              <h1>{data?.product?.name}</h1>
-              <code>{data?.product?.category}</code>
-              <em
-                style={{ display: "flex", gap: "1rem", alignItems: "center" }}
-              >
-                <RatingsComponent value={data?.product?.ratings || 0} />(
-                {data?.product?.numOfReviews} reviews)
-              </em>
-              <h3>₹{data?.product?.price}</h3>
-              <article>
-                <div>
-                  <button onClick={decrement}>-</button>
-                  <span>{quantity}</span>
-                  <button onClick={increment}>+</button>
-                </div>
-                <button
-                  onClick={() =>
-                    addToCartHandler({
-                      productId: data?.product?._id!,
-                      name: data?.product?.name!,
-                      price: data?.product?.price!,
-                      stock: data?.product?.stock!,
-                      photo: data?.product?.photos[0].url || "",
-                      quantity: 0,
-                    })
-                  }
-                >
-                  Add To Cart
-                </button>
-              </article>
-              <p>{data?.product?.description}</p>
-            </section>
-          </main>
-        </>
-      )}
+      ) : product ? (
+        <main className="product-details__main">
+          <section className="product-details__gallery">
+            {productImages.length > 0 ? (
+              <>
+                <Slider
+                  showThumbnails
+                  showNav={false}
+                  onClick={() => setCarouselOpen(true)}
+                  images={productImages}
+                />
 
-      <dialog ref={reviewDialogRef} className={"review-dialog"}>
-        <button onClick={reviewCloseHandler}>X</button>
+                {carouselOpen &&
+                  createPortal(
+                    <>
+                      <MyntraCarousel
+                        NextButton={NextButton}
+                        PrevButton={PrevButton}
+                        setIsOpen={setCarouselOpen}
+                        images={productImages}
+                        objectFit="contain"
+                      />
+
+                      <button
+                        type="button"
+                        className="product-details__zoom-close"
+                        onClick={() => setCarouselOpen(false)}
+                        aria-label="Close image viewer"
+                      >
+                        ×
+                      </button>
+                    </>,
+                    document.body,
+                  )}
+              </>
+            ) : (
+              <div className="product-details__image-placeholder">
+                Product image unavailable
+              </div>
+            )}
+          </section>
+
+          <section className="product-details__info">
+            <span className="product-details__category">
+              {product.category}
+            </span>
+
+            <h1>{product.name}</h1>
+
+            <div className="product-details__rating">
+              <RatingsComponent value={product.ratings || 0} />
+              <span>({product.numOfReviews || 0} reviews)</span>
+            </div>
+
+            <h2 className="product-details__price">
+              ₹{product.price.toLocaleString("en-IN")}
+            </h2>
+
+            <p
+              className={
+                product.stock > 0
+                  ? "product-details__stock product-details__stock--available"
+                  : "product-details__stock product-details__stock--unavailable"
+              }
+            >
+              {product.stock > 0
+                ? `${product.stock} items available`
+                : "Out of stock"}
+            </p>
+
+            <div className="product-details__purchase">
+              <div className="product-details__quantity">
+                <button
+                  type="button"
+                  onClick={decrement}
+                  disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+
+                <span>{quantity}</span>
+
+                <button
+                  type="button"
+                  onClick={increment}
+                  disabled={product.stock < 1 || quantity >= product.stock}
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className="product-details__add-button"
+                onClick={addToCartHandler}
+                disabled={product.stock < 1}
+              >
+                Add to Cart
+              </button>
+            </div>
+
+            <div className="product-details__description">
+              <h2>Product Description</h2>
+              <p>{product.description}</p>
+            </div>
+          </section>
+        </main>
+      ) : null}
+
+      <dialog
+        ref={reviewDialogRef}
+        className="review-dialog"
+        onClick={(event) => {
+          if (event.target === reviewDialogRef.current) {
+            reviewCloseHandler();
+          }
+        }}
+      >
+        <button
+          type="button"
+          className="review-dialog__close"
+          onClick={reviewCloseHandler}
+          aria-label="Close review dialog"
+          disabled={reviewSubmitting}
+        >
+          ×
+        </button>
+
         <h2>Write a Review</h2>
+
         <form onSubmit={submitReview}>
+          <label htmlFor="review-comment">Your review</label>
+
           <textarea
+            id="review-comment"
             value={reviewComment}
-            onChange={(e) => setReviewComment(e.target.value)}
-            placeholder="Review..."
-          ></textarea>
+            onChange={(event) => setReviewComment(event.target.value)}
+            placeholder="Share your experience with this product..."
+            rows={5}
+            maxLength={1000}
+            required
+          />
+
           <RatingsEditable />
-          <button type="submit">Submit</button>
+
+          <button type="submit" disabled={reviewSubmitting}>
+            {reviewSubmitting ? "Submitting..." : "Submit Review"}
+          </button>
         </form>
       </dialog>
 
-      <section>
-        <article>
-          <h2>Reviews</h2>
-          {reviewsResponse.isLoading
-            ? null
-            : user && (
-                <button onClick={showDialog}>
-                  <TfiWrite />
-                </button>
-              )}
-        </article>
-        <div
-          style={{
-            display: "flex",
-            gap: "2rem",
-            overflowX: "auto",
-            padding: "2rem",
-          }}
-        >
-          {reviewsResponse.isLoading ? (
-            <SkeletonLoader width="100%" length={5} />
-          ) : (
-            reviewsResponse.data?.productReviews.map((review) => (
-              <ReviewCard review={review} />
-            ))
+      <section className="product-details__reviews">
+        <div className="product-details__reviews-heading">
+          <div>
+            <h2>Customer Reviews</h2>
+            <p>See what customers think about this product.</p>
+          </div>
+
+          {user && !reviewsResponse.isLoading && (
+            <button type="button" onClick={showDialog}>
+              <TfiWrite />
+              Write a Review
+            </button>
           )}
         </div>
+
+        {reviewsResponse.isLoading ? (
+          <SkeletonLoader width="100%" length={3} />
+        ) : reviewsResponse.isError ? (
+          <p className="product-details__reviews-message">
+            Unable to load reviews. Please try again later.
+          </p>
+        ) : reviews.length > 0 ? (
+          <div className="product-details__review-list">
+            {reviews.map((review) => (
+              <ReviewCard key={review._id} review={review} />
+            ))}
+          </div>
+        ) : (
+          <div className="product-details__reviews-message">
+            <h3>No reviews yet</h3>
+            <p>Be the first to share your experience with this product.</p>
+          </div>
+        )}
       </section>
     </div>
   );
@@ -199,28 +352,23 @@ const ProductDetailsPage = () => {
 
 const ReviewCard = ({ review }: { review: Review }) => {
   return (
-    <div key={review._id} className="review">
+    <article className="review">
       <RatingsComponent value={review.rating} />
+
       <p>{review.comment}</p>
-      <div>
-        <img src={review.user.photo} alt="User" />
+
+      <div className="review__user">
+        <img src={review.user.photo} alt="" loading="lazy" />
         <small>{review.user.name}</small>
       </div>
-    </div>
+    </article>
   );
 };
 
 const ProductLoader = () => {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "2rem",
-        border: "1px solid #f1f1f1",
-        height: "80vh",
-      }}
-    >
-      <section style={{ width: "100%", height: "100%" }}>
+    <div className="product-details__loader">
+      <section>
         <SkeletonLoader
           width="100%"
           containerHeight="100%"
@@ -228,32 +376,35 @@ const ProductLoader = () => {
           length={1}
         />
       </section>
-      <section
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: "4rem",
-          padding: "2rem",
-        }}
-      >
+
+      <section>
         <SkeletonLoader width="40%" length={3} />
         <SkeletonLoader width="50%" length={4} />
         <SkeletonLoader width="100%" length={2} />
-        <SkeletonLoader width="100%" length={10} />
+        <SkeletonLoader width="100%" length={5} />
       </section>
     </div>
   );
 };
 
 const NextButton: CarouselButtonType = ({ onClick }) => (
-  <button onClick={onClick} className="carousesl-btn">
+  <button
+    type="button"
+    onClick={onClick}
+    className="carousel-btn"
+    aria-label="Next image"
+  >
     <FaArrowRightLong />
   </button>
 );
 
 const PrevButton: CarouselButtonType = ({ onClick }) => (
-  <button onClick={onClick} className="carousel-btn">
+  <button
+    type="button"
+    onClick={onClick}
+    className="carousel-btn"
+    aria-label="Previous image"
+  >
     <FaArrowLeftLong />
   </button>
 );

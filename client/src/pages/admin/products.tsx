@@ -1,6 +1,6 @@
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
-import { FaPlus } from "react-icons/fa";
+import { FaBoxOpen, FaImage, FaPlus } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { Link, NavLink } from "react-router-dom";
 import { Column } from "react-table";
@@ -44,47 +44,107 @@ const columns: Column<DataType>[] = [
 
 const Products = () => {
   const { user } = useSelector(
-    (state: { userReducer: userReducerInitialState }) => state.userReducer
+    (state: { userReducer: userReducerInitialState }) => state.userReducer,
   );
-  const { data, isLoading, isError, error } = useAllProductsQuery(user?._id!);
 
-  const [rows, setRows] = useState<DataType[]>([]);
+  const { data, isLoading, isError, error } = useAllProductsQuery(
+    user?._id ?? "",
+    { skip: !user?._id },
+  );
 
-  if (isError) {
-    const err = error as CustomError;
-    toast.error(err.data.message);
-  }
+  const products = data?.adminProducts;
 
   useEffect(() => {
-    if (data) {
-      setRows(
-        data.adminProducts.map((i) => ({
-          photo: <img src={i.photos?.[0]?.url} />,
-          name: i.name,
-          price: i.price,
-          stock: i.stock,
-          action: <NavLink to={`/admin/product/${i._id}`}>Manage</NavLink>,
-        }))
-      );
+    if (isError) {
+      const err = error as CustomError;
+      toast.error(err.data?.message || "Unable to load products.");
     }
-  }, [data]);
+  }, [isError, error]);
 
+  const rows = useMemo<DataType[]>(
+    () =>
+      (products ?? []).map((product) => ({
+        photo: product.photos?.[0]?.url ? (
+          <img src={product.photos[0].url} alt={product.name} loading="lazy" />
+        ) : (
+          <div className="product-table__image-placeholder">
+            <FaImage />
+          </div>
+        ),
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+        action: (
+          <NavLink
+            to={`/admin/products/${product._id}`}
+            className="product-table__manage"
+          >
+            Manage
+          </NavLink>
+        ),
+      })),
+    [products],
+  );
 
-  const Table = TableHOC<DataType>(
-    columns,
-    rows,
-    "dashboard-product-box",
-    "Products",
-    rows.length > 6
-  )();
+  const Table = useMemo(
+    () =>
+      TableHOC<DataType>(
+        columns,
+        rows,
+        "dashboard-product-box",
+        "All Products",
+        rows.length > 6,
+      ),
+    [rows],
+  );
 
   return (
     <div className="admin-container">
       <AdminSidebar />
-      <main>{isLoading ? <SkeletonLoader length={20}/> : Table}</main>
-      <Link to="/admin/product/new" className="create-product-btn">
-        <FaPlus />
-      </Link>
+
+      <main className="admin-products-page">
+        <header className="admin-products-header">
+          <div>
+            <span className="admin-products-eyebrow">CATALOG MANAGEMENT</span>
+            <h1>Products</h1>
+            <p>Manage your store inventory and product listings.</p>
+          </div>
+
+          <div className="admin-products-header__actions">
+            <span className="admin-products-count">
+              {products?.length ?? 0}
+              {products?.length === 1 ? " Product" : " Products"}
+            </span>
+
+            <Link to="/admin/products/new" className="create-product-btn">
+              <FaPlus />
+              <span>Add Product</span>
+            </Link>
+          </div>
+        </header>
+
+        {isLoading ? (
+          <SkeletonLoader length={8} />
+        ) : isError ? (
+          <div className="admin-products-state">
+            <FaBoxOpen />
+            <h2>Couldn't load products</h2>
+            <p>Please try again in a moment.</p>
+          </div>
+        ) : !products?.length ? (
+          <div className="admin-products-state">
+            <FaBoxOpen />
+            <h2>No products yet</h2>
+            <p>Add your first product to start building your catalog.</p>
+            <Link to="/admin/products/new" className="create-product-btn">
+              <FaPlus />
+              <span>Add your First Product</span>
+            </Link>
+          </div>
+        ) : (
+          <Table />
+        )}
+      </main>
     </div>
   );
 };
